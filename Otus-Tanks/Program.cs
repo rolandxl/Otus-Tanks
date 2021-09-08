@@ -9,6 +9,7 @@ namespace Otus_Tanks
             Console.WriteLine("Hello World!");
             Console.WriteLine("TEST!");
             Console.WriteLine("TESTAWAY!");
+            Console.WriteLine("onemore!");
 
         }
     }
