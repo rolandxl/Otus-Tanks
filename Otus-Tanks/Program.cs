@@ -50,6 +50,7 @@ namespace Otus_Tanks
 
 			move.Execute();
 			Console.WriteLine($"Выполнили механику движение. position: {tank.GetProperty("position")}, velocity: {tank.GetProperty("velocity")}");
+			if((Vector3)tank.GetProperty("position") != new Vector3(5,0,8)) Console.WriteLine($"Ошибка в модуле движения");
 
 
 			ICommand rotate = new Rotate(new RotateableAdapter(tank));
@@ -166,7 +167,7 @@ namespace Otus_Tanks
 			tank.SetProperty("angle", 30f);
 			tank.SetProperty("axis", new Vector3(0, 1, 0));
 
-			Console.WriteLine($"Теперь через макрокоманды со встроенным try cach выведем ошибки");
+			Console.WriteLine($"Теперь через макрокоманды c выводом выведем ошибок");
 			List<string> errors = action.Execute();
 			foreach(var i in errors)
 				Console.WriteLine(i);
