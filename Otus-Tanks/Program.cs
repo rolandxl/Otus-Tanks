@@ -139,6 +139,40 @@ namespace Otus_Tanks
 
 			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
 
+						
+			
+			ICommand[] aa = {new Move(new MovableAdapter(tank)),
+				new Rotate(new RotateableAdapter(tank))};
+			ICommand action = new MacroCommand(aa);
+
+
+			tank.SetProperty("position", new Vector3(12, 0, 5));
+			tank.SetProperty("velocity", new Vector3(-7, 0, 3));
+			tank.SetProperty("rotation", new Quaternion(1, 1, 1, 1));
+			tank.SetProperty("angle", 30f);
+			tank.SetProperty("axis", new Vector3(0, 1, 0));
+
+			Console.WriteLine($"Теперь через макрокоманды выполним всё разом");
+			action.Execute();
+
+			Console.WriteLine($"position: {tank.GetProperty("position")}, velocity: {tank.GetProperty("velocity")}, rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
+
+
+
+			tank.ClearPropertys();
+			//tank.SetProperty("position", new Vector3(12, 0, 5));
+			tank.SetProperty("velocity", new Vector3(-7, 0, 3));
+			//tank.SetProperty("rotation", new Quaternion(1, 1, 1, 1));
+			tank.SetProperty("angle", 30f);
+			tank.SetProperty("axis", new Vector3(0, 1, 0));
+
+			Console.WriteLine($"Теперь через макрокоманды со встроенным try cach выведем ошибки");
+			List<string> errors = action.Execute();
+			foreach(var i in errors)
+				Console.WriteLine(i);
+
+			Console.WriteLine($"position: {tank.GetProperty("position")}, velocity: {tank.GetProperty("velocity")}, rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
+
 
 			Console.ReadLine();
 
@@ -184,7 +218,33 @@ namespace Otus_Tanks
 	//создаем интерфейс команды для последующей реалиции его через конкретные механики 
 	interface ICommand
 	{
-		void Execute();
+		//void Execute();
+		List<string> Execute();
+	}
+
+	class MacroCommand : ICommand
+	{
+        readonly ICommand[] commands;
+		public MacroCommand(ICommand[] commands)
+        {
+			this.commands = commands;
+        }
+
+		List<string> errors = new List<string>();
+
+		public List<string> Execute()
+        {
+			foreach (var i in commands)
+                try
+                {
+					i.Execute();
+				}
+                catch (Exception e)
+                {
+					errors.Add(e.Message);
+                }
+			return errors;
+        }
 	}
 
 	//создаем интерфейс объекта который движется
@@ -230,9 +290,10 @@ namespace Otus_Tanks
 			this.movable = movable;
 		}
 
-		public void Execute()
+		public List<string> Execute()
 		{
 			movable.SetPosition(movable.GetPosition() + movable.GetVelocity());
+			return null;
 		}
 	}
 
@@ -280,12 +341,13 @@ namespace Otus_Tanks
 			this.rotateable = rotateable;
 		}
 
-		public void Execute()
+		public List<string> Execute()
 		{
 			Vector3 axis = new();
 			float angle = 0;
 			rotateable.GetRotate(ref axis, ref angle);
-			rotateable.SetRotation(rotateable.GetRotation() * Quaternion.CreateFromAxisAngle(axis, angle));			
+			rotateable.SetRotation(rotateable.GetRotation() * Quaternion.CreateFromAxisAngle(axis, angle));
+			return null;
 		}
 	}
 }
