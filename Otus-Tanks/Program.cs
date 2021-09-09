@@ -57,9 +57,10 @@ namespace Otus_Tanks
 
 			
 			tank.ClearPropertys();
-			tank.SetProperty("angle", new Vector3(0, 3, 0));
-			Console.WriteLine($"Установим только angle и повернем");
-			Console.WriteLine($"angle: {tank.GetProperty("angle")}, rotation: {tank.GetProperty("rotation")}");
+			tank.SetProperty("angle", 30f);
+			tank.SetProperty("axis", new Vector3(0, 1, 0));
+			Console.WriteLine($"Установим только angle и axis и повернем");
+			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
 
 			try
 			{
@@ -72,9 +73,10 @@ namespace Otus_Tanks
 
 
 			tank.ClearPropertys();
-			tank.SetProperty("rotation", new Vector3(0, 10, 0));
-			Console.WriteLine($"Установим только rotation и повернем");
-			Console.WriteLine($"angle: {tank.GetProperty("angle")}, rotation: {tank.GetProperty("rotation")}");
+			tank.SetProperty("rotation", new Quaternion());
+			tank.SetProperty("axis", new Vector3(0, 1, 0));
+			Console.WriteLine($"Установим только rotation и axis и повернем");
+			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
 
 			try
 			{
@@ -85,6 +87,57 @@ namespace Otus_Tanks
 				Console.WriteLine(e.Message);
 			}
 
+
+			tank.ClearPropertys();
+			tank.SetProperty("rotation", new Quaternion());
+			tank.SetProperty("angle", 30f);
+			Console.WriteLine($"Установим только rotation и angle и повернем");
+			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
+
+			try
+			{
+				rotate.Execute();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+			}
+
+			tank.ClearPropertys();
+			tank.SetProperty("rotation", new Quaternion(1,1,1,1));
+			tank.SetProperty("angle", 30f);
+			tank.SetProperty("axis", new Vector3(0, 1, 0));
+			Console.WriteLine($"Установим все значения поворота и повернем");
+			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
+
+			try
+			{
+				rotate.Execute();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+			}
+
+			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
+
+
+
+			tank.SetProperty("angle", -90f);
+			tank.SetProperty("axis", new Vector3(0, 1, 0));
+			Console.WriteLine($"Повернем отсительно текущего положения");
+			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
+
+			try
+			{
+				rotate.Execute();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+			}
+
+			Console.WriteLine($"rotation: {tank.GetProperty("rotation")}, axis: {tank.GetProperty("axis")}, angle: {tank.GetProperty("angle")}");
 
 
 			Console.ReadLine();
@@ -183,11 +236,13 @@ namespace Otus_Tanks
 		}
 	}
 
+	//всё тоже самое с вращением
+
 	interface IRotateable
 	{
-		Vector3 GetAngle();
-		void SetAngle(Vector3 newValue);
-		Vector3 GetRotation();
+		Quaternion GetRotation();
+		void SetRotation(Quaternion newValue);
+		void GetRotate(ref Vector3 axis, ref float angle);
 	}
 
 	class RotateableAdapter : IRotateable
@@ -198,22 +253,24 @@ namespace Otus_Tanks
 			this.Obj = Obj;
 		}
 
-		public Vector3 GetAngle()
-		{
-			if (Obj.GetProperty("angle") == null) throw new Exception("Error: angle is null");
-			return (Vector3)Obj.GetProperty("angle");
-		}
-		public void SetAngle(Vector3 newValue)
-		{
-			Obj.SetProperty("angle", newValue);
-		}
-		public Vector3 GetRotation()
+		public Quaternion GetRotation()
 		{
 			if (Obj.GetProperty("rotation") == null) throw new Exception("Error: rotation is null");
-			return (Vector3)Obj.GetProperty("rotation");
+			return (Quaternion)Obj.GetProperty("rotation");
+		}
+		public void SetRotation(Quaternion newValue)
+		{
+			Obj.SetProperty("rotation", newValue);
+		}
+		public void GetRotate(ref Vector3 axis, ref float angle)
+		{
+			if (Obj.GetProperty("axis") == null) throw new Exception("Error: axis is null");
+			else if (Obj.GetProperty("angle") == null) throw new Exception("Error: angle is null");
+
+			axis = (Vector3)Obj.GetProperty("axis");
+			angle = (float)Obj.GetProperty("angle");
 		}
 	}
-
 
 	class Rotate : ICommand
 	{
@@ -225,142 +282,10 @@ namespace Otus_Tanks
 
 		public void Execute()
 		{
-			rotateable.SetAngle(rotateable.GetAngle() + rotateable.GetRotation());
+			Vector3 axis = new();
+			float angle = 0;
+			rotateable.GetRotate(ref axis, ref angle);
+			rotateable.SetRotation(rotateable.GetRotation() * Quaternion.CreateFromAxisAngle(axis, angle));			
 		}
 	}
-
-
-
-
-
-
-	/*
-	interface IMovable
-		{
-			Vector getPosition();
-			void setPosition(Vector newValue);
-			Vector getVelocity();
-
-		}
-
-		interface IRotable
-		{
-
-		}
-
-		interface UObject
-		{
-			object getProperty(string key);
-			void setProperty(string key, object value);
-		}
-
-		class MovableAdapter : IMovable
-		{
-			UObject obj;
-			public MovableAdapter(UObject obj)
-			{
-				this.obj = obj;
-			}
-
-			public Vector getPosition()
-			{
-				return (Vector)obj.getProperty("position");
-			}
-			public void setPosition(Vector newValue)
-			{
-				obj.setProperty("position", newValue);
-			}
-			public Vector getVelocity()
-			{
-				return (Vector)obj.getProperty("velocity");
-			}
-		}
-
-	"public $(T) get$(name)() { return $(T)obj.getProperty(\"$(name)\");}"
-
-
-	Command move = new Move(new MovableAdapter(obj));
-
-		Command move = new MacroCommand({
-		new CheckFuel(new CheckFueableAdapter(obj)),
-			new Move(new MovableAdapter(obj)),
-			new BurnFuel(new CBurnFueableAdapter(obj))
-	});
-
-
-	Command move = IoC.resolve<Command>("move", obj);
-
-	move.execute();
-
-	interface Command
-	{
-		void execute();
-	}
-
-	class CheckFuelAdapter : ICheckFueable
-	{
-		UObject obj;
-		public CheckFueableAdapter(UObject obj)
-		{
-			this.obj = obj;
-		}
-
-		public unsigned int getFuel()
-		{
-			return IoC.resolve<int>("CheckFuel_fuel", obj);
-		}
-		public int getFuelVelocity()
-		{
-			return (int)obj.getProperty("fuelVelocity");
-		}
-	}
-
-
-	class CheckFuel : Command
-	{
-		ICheckFuelable checkFueable;
-
-		public CheckFuel(ICheckFuelable checkfueable)
-		{
-			this.checkFueable = checkfueable;
-		}
-
-		public void execute()
-		{
-			if (checkfueable.getFuel() - checkfueable.fuelVelocity() < 0)
-				throw new CommandException();
-		}
-	}
-
-	class BurnFuel : Command
-	{
-		IBurnFueable burnFueable;
-
-		public BurnFuel(IBurnFuelable burnfueable)
-		{
-			this.checkFueable = burnfueable;
-		}
-
-		public void execute()
-		{
-			burnfueable.setFuel(burnFueable.getFuel() - checkfueable.fuelVelocity());
-		}
-	}
-
-
-	class Move : Command
-	{
-		IMovable movable;
-		public Move(IMovable movable)
-		{
-			this.movable = movable;
-		}
-
-		public void Execute()
-		{
-			movable.setPosition(movable.getPostion() + movable.getVelocity());
-		}
-	}*/
-
-
 }
