@@ -6,6 +6,7 @@
     <RootNamespace>Otus_Tanks</RootNamespace>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
 
 </Project>
